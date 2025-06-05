@@ -14,15 +14,18 @@ class Testimonial extends Model
         'position',
         'company',
         'message',
-        'image_url',
         'rating',
+        'image_url',
         'is_active',
-        'sort_order'
+        'is_featured',
+        'sort_order',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'rating' => 'integer'
+        'is_featured' => 'boolean',
+        'rating' => 'integer',
+        'sort_order' => 'integer',
     ];
 
     public function scopeActive($query)

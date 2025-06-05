@@ -11,6 +11,17 @@ use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\AwardController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\BlogController as AdminBlogController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
+use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
+use App\Http\Controllers\Admin\ClientController as AdminClientController;
+use App\Http\Controllers\Admin\AwardController as AdminAwardController;
+use App\Http\Controllers\Admin\NewsletterSubscriptionController;
+use App\Http\Controllers\Admin\CommentController as AdminCommentController;
+use App\Http\Controllers\Admin\ContactMessageController as AdminContactMessageController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -55,17 +66,63 @@ Route::prefix('v1')->group(function () {
     Route::post('/blogs/{blog}/comments', [CommentController::class, 'store']);
 });
 
-// Protected admin routes
-Route::middleware('auth:sanctum')->prefix('v1/admin')->group(function () {
-    // Blogs
-    Route::post('/blogs', [BlogController::class, 'store']);
-    Route::put('/blogs/{id}', [BlogController::class, 'update']);
-    Route::delete('/blogs/{id}', [BlogController::class, 'destroy']);
+// Admin Authentication Routes
+Route::prefix('v1/admin')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
     
-    // Contact Messages
-    Route::get('/contact-messages', [ContactMessageController::class, 'index']);
-    Route::get('/contact-messages/{id}', [ContactMessageController::class, 'show']);
-    Route::delete('/contact-messages/{id}', [ContactMessageController::class, 'destroy']);
-    
-    // Add other admin routes as needed...
+    // Protected admin routes
+    Route::middleware(['auth:sanctum', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
+        // Auth routes
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+        
+        // Dashboard
+        Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+        Route::get('/dashboard/recent-activity', [DashboardController::class, 'recentActivity']);
+        Route::get('/dashboard/analytics', [DashboardController::class, 'analytics']);
+        
+        // Blog Management
+        Route::apiResource('blogs', AdminBlogController::class);
+        
+        // Event Management
+        Route::apiResource('events', AdminEventController::class);
+        
+        // Project Management
+        Route::apiResource('projects', AdminProjectController::class);
+        
+        // Testimonial Management
+        Route::apiResource('testimonials', AdminTestimonialController::class);
+        Route::patch('/testimonials/{testimonial}/toggle-featured', [AdminTestimonialController::class, 'toggleFeatured']);
+        
+        // Client Management
+        Route::apiResource('clients', AdminClientController::class);
+        
+        // Award Management
+        Route::apiResource('awards', AdminAwardController::class);
+        
+        // Newsletter Subscriptions
+        Route::get('/newsletter-subscriptions', [NewsletterSubscriptionController::class, 'index']);
+        Route::get('/newsletter-subscriptions/{subscription}', [NewsletterSubscriptionController::class, 'show']);
+        Route::patch('/newsletter-subscriptions/{subscription}/status', [NewsletterSubscriptionController::class, 'updateStatus']);
+        Route::delete('/newsletter-subscriptions/{subscription}', [NewsletterSubscriptionController::class, 'destroy']);
+        Route::get('/newsletter-subscriptions-stats', [NewsletterSubscriptionController::class, 'stats']);
+        Route::get('/newsletter-subscriptions-export', [NewsletterSubscriptionController::class, 'export']);
+        
+        // Comment Management
+        Route::apiResource('comments', AdminCommentController::class)->except(['store', 'update']);
+        Route::patch('/comments/{comment}/approve', [AdminCommentController::class, 'approve']);
+        Route::patch('/comments/{comment}/reject', [AdminCommentController::class, 'reject']);
+        Route::post('/comments/bulk-action', [AdminCommentController::class, 'bulkAction']);
+        
+        // Contact Messages
+        Route::get('/contact-messages', [AdminContactMessageController::class, 'index']);
+        Route::get('/contact-messages/{contactMessage}', [AdminContactMessageController::class, 'show']);
+        Route::patch('/contact-messages/{contactMessage}/read', [AdminContactMessageController::class, 'markAsRead']);
+        Route::delete('/contact-messages/{contactMessage}', [AdminContactMessageController::class, 'destroy']);
+    });
 });
+
+// Temporary test route for admin middleware
+Route::get('/v1/test-admin-middleware', function () {
+    return response()->json(['message' => 'Admin middleware test successful!']);
+})->middleware('admin');

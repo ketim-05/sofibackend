@@ -19,7 +19,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required|string|min:6'
+            'password' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -30,16 +30,15 @@ class AuthController extends Controller
             ], 422);
         }
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid credentials'
             ], 401);
         }
 
-        $user = Auth::user();
-        
-        // Check if user is admin
         if ($user->role !== 'admin') {
             return response()->json([
                 'success' => false,
@@ -47,27 +46,16 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Fix for line 50 - Add error handling for token creation
-        try {
-            $token = $user->createToken('admin-token')->plainTextToken;
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create authentication token'
-            ], 500);
-        }
+        $token = $user->createToken('admin-token')->plainTextToken;
 
         return response()->json([
             'success' => true,
-            'message' => 'Login successful',
-            'data' => [
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'role' => $user->role
-                ],
-                'token' => $token
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role
             ]
         ]);
     }
