@@ -12,11 +12,17 @@ class AwardController extends Controller
 {
     public function index(): JsonResponse
     {
-        $awards = Award::orderBy('award_date', 'desc')->paginate(15);
+        $awards = Award::orderBy('year', 'desc')->paginate(15);
 
         return response()->json([
             'success' => true,
-            'data' => $awards
+            'data' => $awards->items(), // Return only the items (array of awards)
+            'meta' => [                 // Include pagination info in 'meta' if needed
+                'current_page' => $awards->currentPage(),
+                'last_page' => $awards->lastPage(),
+                'per_page' => $awards->perPage(),
+                'total' => $awards->total(),
+            ]
         ]);
     }
 
@@ -24,24 +30,18 @@ class AwardController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
             'organization' => 'required|string|max:255',
-            'award_date' => 'required|date',
-            'award_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'sort_order' => 'nullable|integer',
-            'is_active' => 'boolean',
+            'year' => 'required|integer|min:1900|max:' . date('Y'),
+            'category' => 'nullable|string|max:255',
+            'is_featured' => 'boolean',
+            'award_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $data = $request->all();
         
         if ($request->hasFile('award_image')) {
             $imagePath = $request->file('award_image')->store('awards', 'public');
-            $data['award_image'] = Storage::url($imagePath);
-        }
-
-        // Set sort order if not provided
-        if (!isset($data['sort_order'])) {
-            $data['sort_order'] = Award::max('sort_order') + 1;
+            $data['award_image'] = $imagePath;
         }
 
         $award = Award::create($data);
@@ -65,24 +65,22 @@ class AwardController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
             'organization' => 'required|string|max:255',
-            'award_date' => 'required|date',
-            'award_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'sort_order' => 'nullable|integer',
-            'is_active' => 'boolean',
+            'year' => 'required|integer|min:1900|max:' . date('Y'),
+            'category' => 'nullable|string|max:255',
+            'is_featured' => 'boolean',
+            'award_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $data = $request->all();
         
         if ($request->hasFile('award_image')) {
             if ($award->award_image) {
-                $oldImagePath = str_replace('/storage/', '', $award->award_image);
-                Storage::disk('public')->delete($oldImagePath);
+                Storage::disk('public')->delete($award->award_image);
             }
             
             $imagePath = $request->file('award_image')->store('awards', 'public');
-            $data['award_image'] = Storage::url($imagePath);
+            $data['award_image'] = $imagePath;
         }
 
         $award->update($data);
@@ -97,8 +95,7 @@ class AwardController extends Controller
     public function destroy(Award $award): JsonResponse
     {
         if ($award->award_image) {
-            $imagePath = str_replace('/storage/', '', $award->award_image);
-            Storage::disk('public')->delete($imagePath);
+            Storage::disk('public')->delete($award->award_image);
         }
 
         $award->delete();

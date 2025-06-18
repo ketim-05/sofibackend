@@ -57,4 +57,31 @@ class TestimonialController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Display featured testimonials
+     */
+    public function featured(): JsonResponse
+    {
+        $testimonials = Testimonial::where('is_active', true)
+            ->where('is_featured', true)
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($testimonial) {
+                return [
+                    'id' => $testimonial->id,
+                    'name' => $testimonial->name,
+                    'position' => $testimonial->position,
+                    'company' => $testimonial->company,
+                    'message' => $testimonial->message,
+                    'image_url' => $testimonial->image_url,
+                    'rating' => $testimonial->rating
+                ];
+            });
+        
+        return response()->json([
+            'success' => true,
+            'data' => $testimonials
+        ]);
+    }
 }

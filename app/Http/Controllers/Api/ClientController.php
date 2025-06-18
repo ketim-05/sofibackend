@@ -33,24 +33,44 @@ class ClientController extends Controller
     /**
      * Display the specified client
      */
-    public function show(Client $client): JsonResponse
+    public function show($id): JsonResponse
     {
-        if (!$client->is_active) {
+        try {
+            $client = Client::find($id);
+            
+            if (!$client || !$client->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Client not found'
+                ], 404);
+            }
+            
+            // Ensure logo_url is properly formatted
+            $logoUrl = $client->logo_url;
+            if ($logoUrl && !str_starts_with($logoUrl, 'http')) {
+                $logoUrl = asset('storage/' . ltrim($logoUrl, '/'));
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'logo_url' => $logoUrl,
+                    'website_url' => $client->website_url,
+                    'description' => $client->description
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Client show error: ' . $e->getMessage(), [
+                'id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Client not found'
-            ], 404);
+                'message' => 'An error occurred while fetching the client'
+            ], 500);
         }
-        
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $client->id,
-                'name' => $client->name,
-                'logo_url' => $client->logo_url,
-                'website_url' => $client->website_url,
-                'description' => $client->description
-            ]
-        ]);
     }
 }

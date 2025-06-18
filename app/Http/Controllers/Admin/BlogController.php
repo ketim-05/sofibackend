@@ -49,6 +49,12 @@ class BlogController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // 1. VAlidation
+
+
+
+
+//you can skip 2,3,4 if you don't want change the img name
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
@@ -56,7 +62,7 @@ class BlogController extends Controller
             'author' => 'nullable|string|max:100',
             'content' => 'required|string',
             'innovation_content' => 'nullable|string',
-            'img_url' => 'nullable|url',
+            'img_url' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
             'tags' => 'nullable|array',
             'read_time' => 'nullable|integer|min:1',
             'is_published' => 'boolean'
@@ -69,6 +75,25 @@ class BlogController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+// 2. get File
+$post_img = $request->file('img_url');
+
+// 3. get File Extention
+$img_ext = $post_img->getClientOriginalExtension();
+
+// 4. Change image name by Random Name
+$img_name = time() . '.' . $img_ext;
+
+// 5. Create Image Storage Path
+$img_path = 'uploads/img/blog/';
+
+// 6. Upload Image in Specified path
+$post_img->move('uploads/img/blog/', $img_name);
+
+// 7. Reassign in Validate Variable
+
+$img_url = $img_path . $img_name;
+
 
         $blog = Blog::create([
             'title' => $request->title,
@@ -77,7 +102,7 @@ class BlogController extends Controller
             'author' => $request->author ?? 'Sultan Nuri',
             'content' => $request->content,
             'innovation_content' => $request->innovation_content,
-            'img_url' => $request->img_url,
+            'img_url' =>$img_url,
             'slug' => Str::slug($request->title),
             'tags' => $request->tags,
             'read_time' => $request->read_time ?? 5,
@@ -104,7 +129,13 @@ class BlogController extends Controller
             'data' => $blog
         ]);
     }
+    public function showImage($id) {
+        $blog = Blog::find($id);
 
+        return [
+            "blog_img" => $blog->img_url
+        ];
+    }
     /**
      * Update the specified blog
      */

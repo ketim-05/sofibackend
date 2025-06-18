@@ -14,39 +14,40 @@ class EventController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $perPage = $request->get('per_page', 15);
         $status = $request->get('status', 'upcoming');
         
-        $query = Event::where('status', $status)
-            ->orderBy('start_date', 'asc');
+        $query = Event::where('is_active', true)
+            ->orderBy('start_date', 'desc');
             
-        $events = $query->get()->map(function ($event) {
-            return [
-                'id' => $event->id,
-                'title' => $event->title,
-                'description' => $event->description,
-                'poster_image' => $event->poster_image,
-                'start_date' => $event->formatted_start_date,
-                'end_date' => $event->formatted_end_date,
-                'door_time' => $event->door_time ? $event->door_time->format('g:i A') : null,
-                'location' => $event->location,
-                'price' => $event->formatted_price,
-                'phone_number' => $event->phone_number,
-                'status' => $event->status,
-                'is_featured' => $event->is_featured
-            ];
-        });
+        if ($status === 'upcoming') {
+            $query->upcoming();
+        } elseif ($status === 'past') {
+            $query->past();
+        }
+        
+        $events = $query->paginate($perPage);
         
         return response()->json([
             'success' => true,
-            'data' => $events
+            'data' => $events->items()
         ]);
     }
 
     /**
      * Display the specified event
      */
-    public function show(Event $event): JsonResponse
+    public function show($id): JsonResponse
     {
+        $event = Event::find($id);
+        
+        if (!$event || !$event->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Event not found'
+            ], 404);
+        }
+        
         return response()->json([
             'success' => true,
             'data' => [
@@ -71,7 +72,8 @@ class EventController extends Controller
      */
     public function upcoming(): JsonResponse
     {
-        $events = Event::upcoming()
+        $events = Event::where('is_active', true)
+            ->upcoming()
             ->orderBy('start_date', 'asc')
             ->take(3)
             ->get()

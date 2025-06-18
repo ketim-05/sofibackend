@@ -14,8 +14,7 @@ class AwardSeeder extends Seeder
                 'title' => 'Best Music Producer',
                 'organization' => 'Gumma Awards',
                 'year' => 2023,
-                'image_url' => '/GummaAward.png',
-                'description' => 'Recognized for outstanding contribution to Ethiopian music production and innovation in sound engineering.',
+                'award_image' => 'awards/GummaAward.png',
                 'category' => 'Music Production',
                 'is_featured' => true
             ],
@@ -23,8 +22,7 @@ class AwardSeeder extends Seeder
                 'title' => 'Excellence in Traditional Music Preservation',
                 'organization' => 'Adwa Cultural Awards',
                 'year' => 2022,
-                'image_url' => '/AdwaAward.png',
-                'description' => 'Honored for exceptional work in preserving and modernizing traditional Ethiopian musical elements.',
+                'award_image' => 'awards/AdwaAward.png',
                 'category' => 'Cultural Preservation',
                 'is_featured' => true
             ],
@@ -32,8 +30,7 @@ class AwardSeeder extends Seeder
                 'title' => 'Best African Music Producer',
                 'organization' => 'AFRIMA (All Africa Music Awards)',
                 'year' => 2023,
-                'image_url' => '/AfrimaAward.png',
-                'description' => 'Continental recognition for outstanding music production work across Africa.',
+                'award_image' => 'awards/AfrimaAward.png',
                 'category' => 'International Recognition',
                 'is_featured' => true
             ],
@@ -41,8 +38,7 @@ class AwardSeeder extends Seeder
                 'title' => 'Innovation in Music Technology',
                 'organization' => 'Ethiopian Music Industry Awards',
                 'year' => 2022,
-                'image_url' => '/innovation-award.png',
-                'description' => 'Awarded for pioneering use of technology in Ethiopian music production.',
+                'award_image' => 'awards/innovation-award.png',
                 'category' => 'Technology Innovation',
                 'is_featured' => false
             ],
@@ -50,8 +46,7 @@ class AwardSeeder extends Seeder
                 'title' => 'Outstanding Studio of the Year',
                 'organization' => 'East African Music Awards',
                 'year' => 2023,
-                'image_url' => '/studio-award.png',
-                'description' => 'Recognition for Sofi Studio as the leading recording facility in East Africa.',
+                'award_image' => 'awards/studio-award.png',
                 'category' => 'Studio Excellence',
                 'is_featured' => false
             ],
@@ -59,8 +54,7 @@ class AwardSeeder extends Seeder
                 'title' => 'Community Impact Award',
                 'organization' => 'Ethiopian Arts Council',
                 'year' => 2021,
-                'image_url' => '/community-award.png',
-                'description' => 'Recognized for significant contribution to the development of young Ethiopian artists.',
+                'award_image' => 'awards/community-award.png',
                 'category' => 'Community Service',
                 'is_featured' => false
             ]

@@ -18,10 +18,13 @@ class Event extends Model
         'end_date',
         'door_time',
         'location',
+        'venue',
         'price',
+        'max_attendees',
         'phone_number',
         'status',
-        'is_featured'
+        'is_featured',
+        'is_active'
     ];
 
     protected $casts = [
@@ -29,17 +32,30 @@ class Event extends Model
         'end_date' => 'datetime',
         'door_time' => 'datetime:H:i',
         'price' => 'decimal:2',
-        'is_featured' => 'boolean'
+        'is_featured' => 'boolean',
+        'is_active' => 'boolean'
     ];
 
     public function scopeUpcoming($query)
     {
-        return $query->where('start_date', '>', Carbon::now());
+        return $query->where('start_date', '>', Carbon::now())
+                    ->orWhere('status', 'upcoming');
+    }
+
+    public function scopePast($query)
+    {
+        return $query->where('start_date', '<', Carbon::now())
+                    ->orWhere('status', 'completed');
     }
 
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 
     public function getFormattedPriceAttribute()

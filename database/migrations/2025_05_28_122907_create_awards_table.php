@@ -13,10 +13,9 @@ return new class extends Migration
             $table->string('title');
             $table->string('organization');
             $table->integer('year');
-            $table->string('image_url')->nullable();
-            $table->text('description')->nullable();
-            $table->string('category')->nullable(); // Add this line
+            $table->string('category')->nullable();
             $table->boolean('is_featured')->default(false);
+            $table->string('award_image')->nullable();
             $table->timestamps();
         });
     }

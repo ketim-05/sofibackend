@@ -39,7 +39,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        if ($user->role !== 'admin') {
+        if (!$user->is_admin) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized access'
@@ -55,7 +55,7 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->role
+                'is_admin' => $user->is_admin
             ]
         ]);
     }
@@ -85,7 +85,7 @@ class AuthController extends Controller
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
-                    'role' => $request->user()->role
+                    'is_admin' => $request->user()->is_admin
                 ]
             ]
         ]);

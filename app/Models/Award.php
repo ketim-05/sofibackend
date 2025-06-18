@@ -13,9 +13,14 @@ class Award extends Model
         'title',
         'organization',
         'year',
-        'image_url',
-        'description',
-        'sort_order'
+        'category',
+        'is_featured',
+        'award_image'
+    ];
+
+    protected $casts = [
+        'year' => 'integer',
+        'is_featured' => 'boolean'
     ];
 
     public function scopeOrdered($query)
